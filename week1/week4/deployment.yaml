@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-world
+  name: week4
   labels:
-    app: hello-world
+    app: week4
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hello-world
+      app: week4
   template:
     metadata:
       labels:
-        app: hello-world
+        app: week4
     spec:
       containers:
-      - name: hello-world
-        image: docker.io/matt1as/sap-community-week1:v30
+      - name: week4
+        image: docker.io/jacobtan89/ui5-walkthrough:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -37,10 +37,10 @@ status: {}
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello-world
+  name: week4
 spec:
   selector:
-    app: hello-world
+    app: week4
   ports:
   - port: 8080
     targetPort: 8080
@@ -51,18 +51,36 @@ spec:
 apiVersion: gateway.kyma-project.io/v1alpha1
 kind: APIRule
 metadata:
-  name: hello-world
+  name: week4
 spec:
   gateway: kyma-gateway.kyma-system.svc.cluster.local
   service:
-    name: hello-world
+    name: week4
     port: 8080
-    host: hello-world
+    host: week4
   rules:
     - path: /.*
       methods: ["GET"]
       accessStrategies:
-        - handler: jwt
-          config:
-            jwks_urls:
-              - https://ayjs7ocsl.accounts.ondemand.com/oauth2/certs
+        - handler: noop
+          config: {}
+
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: 'autoscaler'
+  namespace: default
+spec:
+  minReplicas: 1
+  maxReplicas: 10
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: 'week4'
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80           
